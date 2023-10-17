@@ -1,3 +1,5 @@
+import numpy as np
+
 class Dados_Entrada:
     
     def __init__(self, num_steps, alpha, beta, gama, delta, epsilon, grau = 2):
@@ -16,4 +18,9 @@ class Dados_Entrada:
         self.dt = T/self.num_steps
     
     def __repr__(self) ->str:
-        return str(self.num_steps)
+        return str(f"num_steps: {self.num_steps}, alpha: {self.alpha}, beta: {self.beta}, gama: {self.gama}, delta: {self.delta}, epsilon: {self.epsilon}, grau: {self.grau}")
+
+if __name__ == "__main__":
+
+    problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1)
+    print(problema)

@@ -5,6 +5,10 @@ Created on Mon Oct  2 18:47:03 2023
 
 @author: rodrigonegreiros
 """
+from dados_entrada import Dados_Entrada
+from criacao_malhas import Malhas
+
+'''
 from datetime import datetime
 import pickle
 import ufl
@@ -18,69 +22,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dolfinx.io import gmshio
 from dolfinx.mesh import create_unit_square
+'''
 
-start_time = time.time()
-
-#nome_arquivo = input('Nome do arquivo:') + ".txt"
-
-#arquivo = open(nome_arquivo, "a")
-#elementos_vetor = list()
-        
-class Malhas:
-    
-    def __init__(self, tipo_malha, elementos_x, elementos_y, problema):
-        self.tipo_malha = tipo_malha
-        self.elementos_x = elementos_x
-        self.elementos_y = elementos_y
-        
-    
-    def gerando_malha(self):
-        
-        if self.tipo_malha == 'quadrada-normal':
-            self.domain = create_unit_square(MPI.COMM_WORLD, self.elementos_x, self.elementos_y)
-            self.V = fem.FunctionSpace(self.domain, ("CG", problema.grau))
-            
-            return self.domain, self.V
-            
-        
-        if self.tipo_malha == 'gmsh':
-            gmsh.initialize()
-            
-            L = 1
-            H = 1
-            c_x = c_y =0.25
-            r = 0.125
-            gdim = 2
-            elementos = 20  
-            nx = ny = L / elementos
-    
-            mesh_comm = MPI.COMM_WORLD
-            model_rank = 0
-            if mesh_comm.rank == model_rank:
-                rectangle = gmsh.model.occ.addRectangle(0, 0, 0, L, H, tag = 1)
-                obstacle = gmsh.model.occ.addDisk(c_x, c_y, 0, r, r)
-    
-            if mesh_comm.rank == model_rank:
-                fluid = gmsh.model.occ.cut([(gdim, rectangle)], [(gdim, obstacle)])
-                gmsh.model.occ.synchronize()
-                gmsh.model.addPhysicalGroup(gdim, [rectangle])
-                gmsh.model.addPhysicalGroup(gdim, [obstacle])
-    
-            if mesh_comm.rank == model_rank:
-                gmsh.option.setNumber("Mesh.SubdivisionAlgorithm", 2)
-                gmsh.option.setNumber("Mesh.CharacteristicLengthMin",nx)
-                gmsh.option.setNumber("Mesh.CharacteristicLengthMax",ny)
-                gmsh.model.mesh.generate(gdim)
-                gmsh.model.mesh.setOrder(2)
-                gmsh.model.mesh.optimize("Netgen")
-    
-            self.domain, cell_markers, facet_markers = gmshio.model_to_mesh(gmsh.model, mesh_comm, model_rank, gdim=gdim)
-            facet_markers.name = "Facet markers"
-            
-            self.V = fem.FunctionSpace(self.domain, ("CG", problema.grau))
-            
-            return self.domain, self.V
-
+'''       
 class Funcoes:
     
     def __init__(self, domain, V, k = 2, l = 2.5, t0 = 0, pi = np.pi, p = 4):
@@ -285,7 +229,7 @@ class FormaVariacional:
             
             
             print(str.format("Time step {:}, Número de iteracoes: {:}, vetor= {:}", n, num_its, a_0.x.array[10:15]))
-                
+'''                
 
 if __name__ == "__main__":
 
@@ -293,12 +237,12 @@ if __name__ == "__main__":
     
     domain, V = Malhas('quadrada-normal', 10, 10, problema).gerando_malha()
     
-    classe_funcoes = Funcoes(domain, V) 
+    #classe_funcoes = Funcoes(domain, V) 
     
-    condicoes_contorno = Condicoes_contorno('solta')
+    #condicoes_contorno = Condicoes_contorno('solta')
     
-    forma_variacional = FormaVariacional(V, domain)
-    a_no_tempo = forma_variacional.a_n()
+    #forma_variacional = FormaVariacional(V, domain)
+    #a_no_tempo = forma_variacional.a_n()
 
     
     
