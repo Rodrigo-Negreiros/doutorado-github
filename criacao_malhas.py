@@ -1,7 +1,6 @@
 from dados_entrada import Dados_Entrada
 
 import ufl
-import math
 from mpi4py import MPI
 from petsc4py import PETSc
 from dolfinx import mesh, fem, plot, io, nls, log
@@ -17,6 +16,7 @@ class Malhas:
         self.elementos_x = elementos_x
         self.elementos_y = elementos_y
         
+    
     def gerando_malha(self):
         
         if self.tipo_malha == 'quadrada-normal':
@@ -65,5 +65,9 @@ class Malhas:
 
 if __name__ == "__main__":
 
-    problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1)
-    domain, V = Malhas(problema, 'quadrada-normal',10, 10).gerando_malha()
+    problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1, 4)
+    domain, V = Malhas(problema, 'quadrada-normal', 10, 10).gerando_malha()
+    
+    
+    
+    
