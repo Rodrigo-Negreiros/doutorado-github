@@ -6,6 +6,9 @@ from condicoes_contorno import Condicoes_contorno
 import math
 import ufl
 from petsc4py import PETSc
+import pickle
+import os
+import numpy as np
 
 from dolfinx import mesh, fem, nls
 
@@ -43,6 +46,9 @@ class FormaVariacional:
         self.v_1_t.interpolate(classe_funcoes.v_exa())
         
         self.energia_y = []
+        
+        # Serve para gerar videos
+        #self.vetores_un = [self.u_0.x.array.real]
         
   
     def retorna_vetor_tempo(self) -> list:
@@ -126,8 +132,11 @@ class FormaVariacional:
         v_1_t.name = "v_1_t"
         v_1_t.interpolate(self.classe_funcoes.v_exa())
 
-
-        for n in range(num_steps):
+        # Serve para gerar videos
+        pasta_vetores = 'vetores'
+        vetores_un = [self.u_0.x.array.real]
+        
+        for n in range(self.dados_entrada.num_steps):
             
             dt = self.dados_entrada.dt
             t = t0 + (n+1)*dt
@@ -146,18 +155,38 @@ class FormaVariacional:
             
             # Atualização dos passos de Newmark
             self.u_0.x.array[:] =  util + (dt ** 2 / 2) * 2 * self.dados_entrada.beta * a_1.x.array
+            u_teste = self.u_0.x.array
             self.v_0.x.array[:] = self.v_0.x.array + dt * ((1 - self.dados_entrada.gama) * a_0.x.array + self.dados_entrada.gama * a_1.x.array)
             a_0.x.array[:] = a_1.x.array
             
+            soma = np.zeros(len(self.u_0.x.array)) + self.u_0.x.array
+            vetores_un.append(soma)
             
             print(str.format("Time step {:}, Número de iteracoes: {:}", n, num_its))
+            #print('')
+        
+        
+        nome_arquivo = 'vetores_un.pkl'
+        caminho_completo = os.path.join(pasta_vetores, nome_arquivo)
+        
+        if not os.path.exists(pasta_vetores):
+            os.makedirs(pasta_vetores)
+        
+        with open(caminho_completo, 'wb') as arquivo_pickle:
+            pickle.dump(vetores_un, arquivo_pickle)
 
 
+'''
 if __name__ == "__main__":
 
     problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1, 4)
     domain, V = Malhas(problema, 'quadrada-normal', 10, 10).gerando_malha()
     funcoes = Funcoes(problema, domain, V)
-    condicoes_contorno = Condicoes_contorno(domain, V, 'solta')
+    condicoes_contorno = Condicoes_contorno(domain, V, 'solte-1')
     forma_variacional = FormaVariacional(problema, funcoes, condicoes_contorno, V, domain)
+'''    
+    
+    
+    
+    
 
