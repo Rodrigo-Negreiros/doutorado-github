@@ -6,10 +6,11 @@ import pyvista as pv
 import pickle
 import os
 import matplotlib.pyplot as plt
+import time
 
 class Imprime_Resultados:
     
-    def __init__(self, dados_entrada, V, retorna_vetor_energia, retorna_vetor_tempo, nome_pasta = 'vetores', nome_arquivo = 'vetores_un.pkl'):
+    def __init__(self, dados_entrada, V, retorna_vetor_energia, retorna_vetor_tempo, nome_arquivo, nome_pasta = 'vetores'):
         self.V = V
         self.dados_entrada = dados_entrada
         self.retorna_vetor_energia = retorna_vetor_energia
@@ -28,16 +29,28 @@ class Imprime_Resultados:
             return dados
     
     def mostra_grafico_energia(self):
-        y_energia = self.retorna_vetor_energia()
-        x_tempo = self.retorna_vetor_tempo()
-        plt.plot(x_tempo, y_energia)
-        plt.title(f'Gráfico de energia (nx:{10}, grau:{self.dados_entrada.grau}, passos: {self.dados_entrada.num_steps}, delta = {self.dados_entrada.delta})')
-        plt.legend(loc="upper right")
-        plt.xlabel("Período: 8π")
-        plt.ylabel("Energia em escala logarítmica")
-        return plt.show()
-    
+        fig, ax = plt.subplots()
         
+        y_energia = list(self.retorna_vetor_energia())
+        x_tempo = list(self.retorna_vetor_tempo())
+        ax.plot(x_tempo, y_energia)
+        
+        ax.set_title(f'Gráfico de energia (nx:{10}, grau:{self.dados_entrada.grau}, passos: {self.dados_entrada.num_steps}, delta = {self.dados_entrada.delta})', fontweight ="bold")
+        ax.set_xlabel("Período: 8π", fontsize = 12)
+        ax.set_ylabel("Energia em escala logarítmica", fontsize = 12)
+        
+        pasta_graficos_energia = 'graficos_energias'
+        nome_arquivo = f'grafico-energia-nx-{10}-grau-{self.dados_entrada.grau}-passos-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}.png'
+        caminho_completo = os.path.join(pasta_graficos_energia, nome_arquivo)
+        
+        if not os.path.exists(pasta_graficos_energia):
+            os.makedirs(pasta_graficos_energia)
+        
+        fig.savefig(caminho_completo, format='png')
+        #ax.set_yscale('log')
+        
+        return plt.show()
+         
         
     def mostra_video(self):
         #gmsh.initialize()
@@ -52,7 +65,14 @@ class Imprime_Resultados:
             grid.set_active_scalars("u")
         
             plotter = pv.Plotter()
-            plotter.open_gif("waves.gif", fps=5)
+            pasta_videos = 'videos'
+            nome_arquivo = f"waves-{time.strftime('%H-%M-%S', time.localtime())[:8]}.gif"
+            caminho_completo = os.path.join(pasta_videos, nome_arquivo)
+            
+            if not os.path.exists(pasta_videos):
+                os.makedirs(pasta_videos)
+            
+            plotter.open_gif(caminho_completo, fps=5)
         
             warped = grid.warp_by_scalar()
             warped.set_active_scalars("u")
@@ -71,7 +91,6 @@ class Imprime_Resultados:
                 if plotear == True and n % 2 == 0:
                     #warped.set_active_scalars("u")
                     plotter.update_scalars(vetores[n])
-                    print(vetores[n])
                     warped = grid.warp_by_scalar()
                     plotter.update_coordinates(warped.points.copy(), render=False)
                     #plotter.add_text(str.format("Tempo: {:.3g}", mm.t.value), name='time-label')

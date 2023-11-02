@@ -13,8 +13,9 @@ import numpy as np
 from dolfinx import mesh, fem, nls
 
 class FormaVariacional:
-    def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, V, domain):
+    def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, V, domain, elementos_x):
         
+        self.elementos_x = elementos_x 
         self.V = V
         self.domain = domain
         p = dados_entrada.p
@@ -166,7 +167,7 @@ class FormaVariacional:
             #print('')
         
         
-        nome_arquivo = 'vetores_un.pkl'
+        nome_arquivo = f'vetores_un-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.pkl'
         caminho_completo = os.path.join(pasta_vetores, nome_arquivo)
         
         if not os.path.exists(pasta_vetores):
