@@ -9,6 +9,7 @@ class Condicoes_contorno:
     
     def __init__(self, domain, V, como_prender):
         
+        self.como_prender = como_prender
         self.null_vector = fem.Function(V)
         self.null_vector.vector.set(0.0)
 

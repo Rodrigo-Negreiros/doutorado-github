@@ -1,5 +1,8 @@
 from dados_entrada import Dados_Entrada
 from criacao_malhas import Malhas
+#from geracao_funcoes import Funcoes
+from forma_variacional import FormaVariacional
+from condicoes_contorno import Condicoes_contorno
 
 from dolfinx import plot
 import pyvista as pv
@@ -10,9 +13,13 @@ import time
 
 class Imprime_Resultados:
     
-    def __init__(self, dados_entrada, V, retorna_vetor_energia, retorna_vetor_tempo, nome_arquivo, nome_pasta = 'vetores'):
-        self.V = V
+    def __init__(self, dados_entrada, malha, condicoes_contorno, V, elementos_x, retorna_vetor_energia, retorna_vetor_tempo, nome_arquivo, nome_pasta = 'vetores'):
         self.dados_entrada = dados_entrada
+        self.malha = malha
+        self.condicoes_contorno = condicoes_contorno
+        self.V = V
+        self.elementos_x = elementos_x
+        
         self.retorna_vetor_energia = retorna_vetor_energia
         self.retorna_vetor_tempo = retorna_vetor_tempo
         self.nome_pasta = nome_pasta
@@ -35,12 +42,12 @@ class Imprime_Resultados:
         x_tempo = list(self.retorna_vetor_tempo())
         ax.plot(x_tempo, y_energia)
         
-        ax.set_title(f'Gráfico de energia (nx:{10}, grau:{self.dados_entrada.grau}, passos: {self.dados_entrada.num_steps}, delta = {self.dados_entrada.delta})', fontweight ="bold")
+        ax.set_title(f'Gráfico de energia (nx:{self.elementos_x}, grau:{self.dados_entrada.grau}, passos: {self.dados_entrada.num_steps}, delta = {self.dados_entrada.delta})', fontweight ="bold")
         ax.set_xlabel("Período: 8π", fontsize = 12)
         ax.set_ylabel("Energia em escala logarítmica", fontsize = 12)
         
         pasta_graficos_energia = 'graficos_energias'
-        nome_arquivo = f'grafico-energia-nx-{10}-grau-{self.dados_entrada.grau}-passos-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}.png'
+        nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.png'
         caminho_completo = os.path.join(pasta_graficos_energia, nome_arquivo)
         
         if not os.path.exists(pasta_graficos_energia):
@@ -53,7 +60,6 @@ class Imprime_Resultados:
          
         
     def mostra_video(self):
-        #gmsh.initialize()
         vetores = self.carregar_arquivo_por_nome()
         
         plotear = True #False  # Faça plotear = True para salvar no arquivo "waves.gif"
@@ -64,9 +70,9 @@ class Imprime_Resultados:
             grid.point_data["u"] = vetores[0]
             grid.set_active_scalars("u")
         
-            plotter = pv.Plotter()
+            plotter = pv.Plotter(off_screen=True)
             pasta_videos = 'videos'
-            nome_arquivo = f"waves-{time.strftime('%H-%M-%S', time.localtime())[:8]}.gif"
+            nome_arquivo = f"waves-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.gif"
             caminho_completo = os.path.join(pasta_videos, nome_arquivo)
             
             if not os.path.exists(pasta_videos):
@@ -79,7 +85,7 @@ class Imprime_Resultados:
         
             # Add mesh to plotter and visualize
             plotter.add_mesh(warped, clim=[-self.dados_entrada.beta, self.dados_entrada.beta])#, show_edges=False, lighting=False)
-            #plotter.add_text(str.format("Tempo: {:.3g}", mm.t.value), name='time-label')
+            plotter.add_text(str.format("Tempo: {:.3g}", self.retorna_vetor_tempo()[0]), name='time-label')
             #plotter.show_axes()
             bnds = [0, 1, 0, 1, -1.2 * self.dados_entrada.beta, 1.2 * self.dados_entrada.beta]
             plotter.show_bounds(bounds=bnds, location='all')
@@ -93,7 +99,7 @@ class Imprime_Resultados:
                     plotter.update_scalars(vetores[n])
                     warped = grid.warp_by_scalar()
                     plotter.update_coordinates(warped.points.copy(), render=False)
-                    #plotter.add_text(str.format("Tempo: {:.3g}", mm.t.value), name='time-label')
+                    plotter.add_text(str.format("Tempo: {:.3g}", self.retorna_vetor_tempo()[n]), name='time-label')
                     #plotter.show_axes()
                     plotter.show_bounds(bounds=bnds, location='all')
                     # Write a frame. This triggers a render.
@@ -114,7 +120,7 @@ if __name__ == "__main__":
     vetor_energia = forma_variacional.retorna_vetor_energia
     vetor_tempo = forma_variacional.retorna_vetor_tempo
     vetores = Imprime_Resultados(problema, V, vetor_energia, vetor_tempo)
- '''   
+'''  
 
   
     

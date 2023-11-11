@@ -13,8 +13,9 @@ import numpy as np
 from dolfinx import mesh, fem, nls
 
 class FormaVariacional:
-    def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, V, domain, elementos_x):
+    def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, malha, V, domain, elementos_x):
         
+        self.malha = malha
         self.elementos_x = elementos_x 
         self.V = V
         self.domain = domain
@@ -167,7 +168,7 @@ class FormaVariacional:
             #print('')
         
         
-        nome_arquivo = f'vetores_un-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.pkl'
+        nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.pkl'
         caminho_completo = os.path.join(pasta_vetores, nome_arquivo)
         
         if not os.path.exists(pasta_vetores):
@@ -177,15 +178,17 @@ class FormaVariacional:
             pickle.dump(vetores_un, arquivo_pickle)
 
 
-'''
+
 if __name__ == "__main__":
 
-    problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1, 4)
-    domain, V = Malhas(problema, 'quadrada-normal', 10, 10).gerando_malha()
+    problema = Dados_Entrada(10, 1, 0.25, 0.5, 0.002, 1, 4)
+    malha = Malhas(problema, 20, 20, 'quadrada-normal', True, 0.5)
+    domain, V, elementos_x = malha.gerando_malha()
     funcoes = Funcoes(problema, domain, V)
     condicoes_contorno = Condicoes_contorno(domain, V, 'solte-1')
-    forma_variacional = FormaVariacional(problema, funcoes, condicoes_contorno, V, domain)
-'''    
+    forma_variacional = FormaVariacional(problema, funcoes, condicoes_contorno, malha, V, domain, elementos_x)
+    
+    
     
     
     
