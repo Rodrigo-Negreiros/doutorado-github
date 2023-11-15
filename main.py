@@ -7,13 +7,13 @@ from imprimir_resultados import Imprime_Resultados
 import time
 
 start_time = time.time()
-numeros_passos = [100, 200, 400]
+numeros_passos = [100]
 numero_elementos = [10, 20]
 
 for n_p in numeros_passos:
     for n_e in numero_elementos: 
         print(f'Número de passos: {n_p}, Numero de elementos: {n_e}')
-        problema = Dados_Entrada(n_p, 1, 0.25, 0.5, 0.05, 1, 4, 2)
+        problema = Dados_Entrada(n_p, 1, 0.25, 0.5, 0.05, 1, 4, 4)
         malha = Malhas(problema, n_e, n_e, 'quadrada-normal')
         domain, V, elementos_x = malha.gerando_malha()
         funcoes = Funcoes(problema, domain, V)
