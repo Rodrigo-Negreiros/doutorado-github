@@ -1,69 +1,104 @@
 import os
 import base64
-from dash import Dash, html, dcc
-from dash.dependencies import Input, Output
+from dash import Dash, dcc, html, Input, Output
 
-# Obtém a lista de arquivos GIF na pasta "videos" e PNG na pasta "graficos_energias"
 folder_path_gif = "videos"
 folder_path_png = "graficos_energias"
-gif_files = [f for f in os.listdir(folder_path_gif) if f.endswith(".gif")]
-png_files = [f for f in os.listdir(folder_path_png) if f.endswith(".png")]
 
-# Função para extrair parte do nome do arquivo sem a extensão .gif ou .png
-def extract_partial_name(file_name):
-    # Exemplo: 'vetores_un-tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-10-num_steps-100-grau-4.png'
-    # Resultado: 'tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-10-num_steps-100-grau-4'
-    parts = file_name[:-4].split('-')[1:]
-    return '-'.join(parts)
 
-# Função para ler e codificar um arquivo para base64
+numero_de_elementos = [10, 20]
+numero_de_passos = [100, 200, 400]
+delta = [0, 0.01, 0.05]
+grau_dos_polinomios = [2, 4]
+condicoes_contorno = ['solte-1', 'presa']
+
 def read_and_encode_file(file_path):
     with open(file_path, 'rb') as file:
         encoded_file = base64.b64encode(file.read()).decode('utf-8')
     return encoded_file
 
-# Inicializa o aplicativo Dash
 app = Dash(__name__)
 
 # Layout do aplicativo
 app.layout = html.Div([
-    html.H1("Dashboard de Arquivos"),
+    html.H1("Dashboard de soluções", className="titulo"),
     
-    # Componente Dropdown para selecionar o arquivo
-    dcc.Dropdown(
-        id='file-dropdown',
-        options=[{'label': extract_partial_name(file), 'value': file} for file in png_files],
-        value=png_files[0]
-    ),
+    html.Ul([ 
     
-    # Div para exibir o arquivo PNG selecionado (com tamanho 50%)
-    html.Div([
-        html.Img(id='png-display', style={'width': '50%'})
+    html.Li([
+    html.H3("Número de passos:"),
+    dcc.Dropdown(numero_de_passos, value=100, id='dropdown-1', className="seletor"),
     ]),
     
-    # Div para exibir o arquivo GIF correspondente (com tamanho 50%)
+    html.Li([
+    html.H3("Número de elementos:"),
+    dcc.Dropdown(numero_de_elementos, value=10, id='dropdown-2', className="seletor"),
+    ]),
+    
+    html.Li([
+    html.H3("Tamanho do delta:"),
+    dcc.Dropdown(delta, value=0, id='dropdown-3', className="seletor"),  
+    ]),
+    
+    html.Li([
+    html.H3("Grau dos polinômios:"),
+    dcc.Dropdown(grau_dos_polinomios, value=2, id='dropdown-4', className="seletor"),
+    ]),
+    
+    html.Li([
+    html.H3("Condição de contorno:"),
+    dcc.Dropdown(condicoes_contorno, value='solte-1', id='dropdown-5', className="seletor"),
+    ]),
+    
+    ], className="opcoes"),
+    
     html.Div([
-        html.Img(id='gif-display', style={'width': '50%'})
-    ])
+    
+    html.Div([
+    html.H2("Gráfico em escala Logarítmica"),
+    
+    html.Div([
+        html.Img(id='png-display', style={'width': '100%'})
+    ]),
+    ], className="imagem"),
+    
+    html.Div([
+    html.H2("Comportamento da solução"),
+   
+    html.Div([
+        html.Img(id='gif-display', style={'width': '100%'})
+    ]),
+    ]),
+    ], className="solucoes")
+
 ])
 
-# Callback para atualizar a exibição dos arquivos com base na seleção do Dropdown
+
 @app.callback(
-    [Output('png-display', 'src'),
-     Output('gif-display', 'src')],
-    [Input('file-dropdown', 'value')]
+    Output('png-display', 'src'),
+    [Input('dropdown-1', 'value'),
+     Input('dropdown-2', 'value'),
+     Input('dropdown-3', 'value'),
+     Input('dropdown-4', 'value')]
 )
-def update_files(selected_file):
-    # Extrai a parte do nome do arquivo sem a extensão .png
-    partial_name = extract_partial_name(selected_file)
-    
-    # Caminho completo para o arquivo PNG selecionado na pasta "graficos_energias"
-    png_path = os.path.join(folder_path_png, selected_file)
-    # Caminho completo para o arquivo GIF correspondente na pasta "videos"
-    gif_path = os.path.join(folder_path_gif, f'waves-{partial_name}.gif')
-    
-    # Lê e codifica o conteúdo dos arquivos em base64
+def update_output(num_passos, elementos, delta, grau):
+    result_string = f'vetores_un-tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{grau}.png'
+    png_path = os.path.join(folder_path_png, result_string)
     encoded_png = read_and_encode_file(png_path)
+    
+    return f'data:image/png;base64,{encoded_png}'
+
+@app.callback(
+    Output('gif-display', 'src'),
+    [Input('dropdown-1', 'value'),
+     Input('dropdown-2', 'value'),
+     Input('dropdown-3', 'value'), 
+     Input('dropdown-4', 'value')]
+)
+def update_output(num_passos, elementos, delta, grau):
+    result_string = f'tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{grau}'
+    png_path = os.path.join(folder_path_png, result_string)
+    gif_path = os.path.join(folder_path_gif, f'waves-{result_string}.gif')
     
     # Inicializa a variável para o caso de o arquivo GIF não existir
     encoded_gif = None
@@ -77,52 +112,11 @@ def update_files(selected_file):
         print(f"Erro ao ler o arquivo GIF: {e}")
 
     # Retorna as representações em base64 dos arquivos para exibição
-    return f'data:image/png;base64,{encoded_png}', encoded_gif
+    return encoded_gif
+    
+    return gif_path
+
 
 # Executa o aplicativo
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

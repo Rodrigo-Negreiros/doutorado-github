@@ -1,0 +1,68 @@
+body {
+  font-family: "Fira Sans", Arial, sans-serif;
+  margin: 0 px;
+  color: #141414;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin:0 px;
+}
+
+ul{
+  padding: 0px;
+  display: block;
+}
+
+li {
+  display: inline-block;
+  flex-wrap: wrap;
+}
+
+ul li {
+  margin-left: 10px;
+}
+
+.titulo{
+  padding: 40px 20px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #8844ee, #b07dfb);
+  color: #FFFFFF;
+  
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+
+.opcoes {
+  margin: 0;
+  grid-area: ul;
+  
+  padding: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  align-items: top;
+}
+
+.solucoes{
+  margin: 0px;
+  grid-area: div;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: 4fr 6fr;
+  align-items: top;
+}
+
+div .imagem{
+  margin-right:50px;
+}
+
+.imagem{
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}

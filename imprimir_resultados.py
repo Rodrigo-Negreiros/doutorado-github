@@ -35,6 +35,10 @@ class Imprime_Resultados:
                 dados = pickle.load(arquivo_pickle)
             return dados
     
+    def nome_com_parametros(self):
+        return f'tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}'
+    
+    
     def mostra_grafico_energia(self):
         fig, ax = plt.subplots()
         
@@ -47,7 +51,7 @@ class Imprime_Resultados:
         ax.set_ylabel("Energia em escala logarítmica", fontsize = 12)
         
         pasta_graficos_energia = 'graficos_energias'
-        nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.png'
+        nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.png'
         caminho_completo = os.path.join(pasta_graficos_energia, nome_arquivo)
         
         if not os.path.exists(pasta_graficos_energia):
@@ -72,7 +76,7 @@ class Imprime_Resultados:
         
             plotter = pv.Plotter(off_screen=True)
             pasta_videos = 'videos'
-            nome_arquivo = f"waves-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.gif"
+            nome_arquivo = f"waves-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.gif"
             caminho_completo = os.path.join(pasta_videos, nome_arquivo)
             
             if not os.path.exists(pasta_videos):

@@ -168,7 +168,7 @@ class FormaVariacional:
             #print('')
         
         
-        nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-grau-{self.dados_entrada.grau}.pkl'
+        nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.pkl'
         caminho_completo = os.path.join(pasta_vetores, nome_arquivo)
         
         if not os.path.exists(pasta_vetores):

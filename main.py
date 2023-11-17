@@ -7,13 +7,13 @@ from imprimir_resultados import Imprime_Resultados
 import time
 
 start_time = time.time()
-numeros_passos = [100]
+numeros_passos = [100, 200, 400]
 numero_elementos = [10, 20]
 
 for n_p in numeros_passos:
     for n_e in numero_elementos: 
         print(f'Número de passos: {n_p}, Numero de elementos: {n_e}')
-        problema = Dados_Entrada(n_p, 1, 0.25, 0.5, 0.05, 1, 4, 4)
+        problema = Dados_Entrada(n_p, 1, 0.25, 0.5, 0.01, 1, 2, 2)
         malha = Malhas(problema, n_e, n_e, 'quadrada-normal')
         domain, V, elementos_x = malha.gerando_malha()
         funcoes = Funcoes(problema, domain, V)
@@ -26,7 +26,7 @@ for n_p in numeros_passos:
         vetor_tempo = forma_variacional.retorna_vetor_tempo
         
         #Retorna Resultados:
-        nome_arquivo = f'vetores_un-tipo-malha-{malha.tipo_malha}-condicoes-contorno-{condicoes_contorno.como_prender}-elementos-{elementos_x}-num_steps-{problema.num_steps}-grau-{problema.grau}.pkl'   
+        nome_arquivo = f'vetores_un-tipo-malha-{malha.tipo_malha}-condicoes-contorno-{condicoes_contorno.como_prender}-elementos-{elementos_x}-num_steps-{problema.num_steps}-delta-{problema.delta}-grau-{problema.grau}.pkl'   
         resultado = Imprime_Resultados(problema, malha, condicoes_contorno, V, elementos_x, vetor_energia, vetor_tempo, nome_arquivo)
         resultado.mostra_grafico_energia()
         resultado.mostra_video()
