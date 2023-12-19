@@ -11,6 +11,10 @@ import os
 import numpy as np
 
 from dolfinx import mesh, fem, nls
+import time
+
+start_time = time.time()
+
 
 class FormaVariacional:
     def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, malha, V, domain, elementos_x):
@@ -48,6 +52,7 @@ class FormaVariacional:
         self.v_1_t.interpolate(classe_funcoes.v_exa())
         
         self.energia_y = []
+        self.tempo_geral = []
         
         # Serve para gerar videos
         #self.vetores_un = [self.u_0.x.array.real]
@@ -136,6 +141,8 @@ class FormaVariacional:
 
         # Serve para gerar videos
         pasta_vetores = 'vetores'
+        pasta_vetores_energia = 'vetores_energia'
+        pasta_vetores_tempo = 'vetores_tempo_geral'
         vetores_un = [self.u_0.x.array.real]
         
         for n in range(self.dados_entrada.num_steps):
@@ -167,15 +174,38 @@ class FormaVariacional:
             print(str.format("Time step {:}, Número de iteracoes: {:}", n, num_its))
             #print('')
         
-        
+        # vetor solução
         nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.pkl'
         caminho_completo = os.path.join(pasta_vetores, nome_arquivo)
         
         if not os.path.exists(pasta_vetores):
             os.makedirs(pasta_vetores)
         
-        with open(caminho_completo, 'wb') as arquivo_pickle:
-            pickle.dump(vetores_un, arquivo_pickle)
+        with open(caminho_completo, 'wb') as arquivo_pickle_1:
+            pickle.dump(vetores_un, arquivo_pickle_1)
+        
+        # vetor energia
+        nome_arquivo_energia = f'vetores_energia-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.pkl'
+        caminho_completo_energia = os.path.join(pasta_vetores_energia, nome_arquivo_energia)
+        
+        if not os.path.exists(pasta_vetores_energia):
+            os.makedirs(pasta_vetores_energia)
+        
+        with open(caminho_completo_energia, 'wb') as arquivo_pickle_2:
+            pickle.dump(self.energia_y, arquivo_pickle_2)
+            
+        
+        # vetor tempo
+        nome_arquivo_tempo = f'vetor_tempo-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.pkl'
+        caminho_completo_tempo = os.path.join(pasta_vetores_tempo, nome_arquivo_tempo)
+        
+        if not os.path.exists(pasta_vetores_tempo):
+            os.makedirs(pasta_vetores_tempo)
+        
+        with open(caminho_completo_tempo, 'wb') as arquivo_pickle_3:
+            tempo_geral = time.time() - start_time
+            self.tempo_geral += [tempo_geral]
+            pickle.dump(self.tempo_geral, arquivo_pickle_3)
 
 
 
