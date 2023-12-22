@@ -26,4 +26,3 @@ class Dados_Entrada:
 if __name__ == "__main__":
 
     problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1, 4)
-    print(problema)
