@@ -1,7 +1,7 @@
 body {
   font-family: "Fira Sans", Arial, sans-serif;
   margin: 0 px;
-  color: #141414;
+  color: #4C4C4C;
 }
 
 .corpo{
@@ -35,14 +35,15 @@ img{
 
 .problema{
   padding: 50px;
-  background: #bfbfbf;
+  background: #e5e5e5;
   grid-row: 2;
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: repeat(6, 1fr);
+  align-content: start;
 }
 
 div .problema .word-problema{
-  padding: 42px;
+  padding-right: 40px;
   grid-column: 1;
   color: #838383;
   
@@ -52,6 +53,15 @@ div .problema .word-problema{
   border: 5px solid #black;
   grid-column: 2;
   border-radius: 4px;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+}
+
+#funcao-exata{
+  grid-column: 4 / span 2;
+}
+
+#img-exata{
+  grid-column: 6;
 }
 
 /*Barra de opções*/
@@ -80,7 +90,14 @@ li {
   list-style: none;
   grid-row: 1;
   border-radius: 4px;
+}
 
+#react-select-2--value-item,
+#react-select-3--value-item,
+#react-select-4--value-item, 
+#react-select-5--value-item,
+#react-select-6--value-item{
+  color: #e5e5e5;
 }
 
 /*Configuração do Gráfico*/
@@ -164,6 +181,15 @@ li {
   display: inline-block;
 }
 
+.comparacao{
+  grid-row: 5;
+  grid-column: 1 / 2;
+}
+
+#comparacao-title{
+  padding-top: 60px;
+  padding-left: 42px;
+}
 
 
 

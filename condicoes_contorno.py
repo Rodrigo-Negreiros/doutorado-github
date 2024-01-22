@@ -35,7 +35,50 @@ class Condicoes_contorno:
     
 if __name__ == "__main__":
 
-    problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1, 4)
-    domain, V = Malhas(problema, 'quadrada-normal', 10, 10).gerando_malha()
+    valores = {'num_steps' : 100, 
+               'alpha' : 1, 
+               'beta' : 0.25, 
+               'gama' : 0.5, 
+               'delta' : 0.002, 
+               'epsilon': 1, 
+               'p' : 4, 
+               'grau':2
+               }
+    
+    num_elementos = 10
+    
+    como_criar_malha = 'gmsh'
+    furo = True
+    
+    if furo == False or como_criar_malha == 'quadrada-normal':
+        problema = Dados_Entrada(**valores)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha).gerando_malha()
+        como_prender = 'solte-1'
+    
+    elif furo == True and como_criar_malha == 'gmsh': 
+        problema = Dados_Entrada(**valores)
+        centro = input('Centro: ')
+        centro = float(centro)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha, furo, centro).gerando_malha()
+        como_prender = input("Como fazer nas bordas? ")
+        while como_prender not in ['solte-1', 'prenda-as-quatro']:
+            como_prender = input("Como fazer nas bordas? ")
+    
     funcoes = Funcoes(problema, domain, V)
-    condicoes_contorno = Condicoes_contorno(domain, V, 'prenda-as-quatro')
+    
+    condicoes_contorno = Condicoes_contorno(domain, V, como_prender)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

@@ -17,7 +17,7 @@ start_time = time.time()
 
 
 class FormaVariacional:
-    def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, malha, V, domain, elementos_x):
+    def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, malha, V, domain, elementos_x, ):
         
         self.malha = malha
         self.elementos_x = elementos_x 
@@ -54,9 +54,13 @@ class FormaVariacional:
         self.energia_y = []
         self.tempo_geral = []
         
+        self.parte_geral_do_caminho = f'-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}'
+        
         # Serve para gerar videos
         #self.vetores_un = [self.u_0.x.array.real]
-        
+    def retorna_estrutura_caminho(self) -> str:
+        return self.parte_geral_do_caminho
+    
   
     def retorna_vetor_tempo(self) -> list:
         return self.vetor_tempo
@@ -174,8 +178,15 @@ class FormaVariacional:
             print(str.format("Time step {:}, Número de iteracoes: {:}", n, num_its))
             #print('')
         
+        
+        
         # vetor solução
-        nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.pkl'
+        if self.malha.furo == False:
+            nome_arquivo = 'vetores_un' + self.parte_geral_do_caminho + '.pkl'
+        else:
+            nome_arquivo = 'vetores_un' + self.parte_geral_do_caminho + f'-centro-{self.malha.centro}.pkl'
+        
+        #nome_arquivo = 'vetores_un' + self.parte_geral_do_caminho + '.pkl'
         caminho_completo = os.path.join(pasta_vetores, nome_arquivo)
         
         if not os.path.exists(pasta_vetores):
@@ -185,7 +196,12 @@ class FormaVariacional:
             pickle.dump(vetores_un, arquivo_pickle_1)
         
         # vetor energia
-        nome_arquivo_energia = f'vetores_energia-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.pkl'
+        if self.malha.furo == False:
+            nome_arquivo_energia = 'vetores_energia' + self.parte_geral_do_caminho + '.pkl'
+        else:
+            nome_arquivo_energia = 'vetores_energia' + self.parte_geral_do_caminho + f'-centro-{self.malha.centro}.pkl'
+        
+        #nome_arquivo_energia = 'vetores_energia' + self.parte_geral_do_caminho + '.pkl'
         caminho_completo_energia = os.path.join(pasta_vetores_energia, nome_arquivo_energia)
         
         if not os.path.exists(pasta_vetores_energia):
@@ -196,7 +212,12 @@ class FormaVariacional:
             
         
         # vetor tempo
-        nome_arquivo_tempo = f'vetor_tempo-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.pkl'
+        if self.malha.furo == False:
+            nome_arquivo_tempo = 'vetor_tempo' + self.parte_geral_do_caminho + '.pkl'
+        else:
+            nome_arquivo_tempo = 'vetor_tempo' + self.parte_geral_do_caminho + f'-centro-{self.malha.centro}.pkl'
+        
+        #nome_arquivo_tempo = 'vetor_tempo' + self.parte_geral_do_caminho + '.pkl'
         caminho_completo_tempo = os.path.join(pasta_vetores_tempo, nome_arquivo_tempo)
         
         if not os.path.exists(pasta_vetores_tempo):
@@ -210,17 +231,50 @@ class FormaVariacional:
 
 
 if __name__ == "__main__":
-
-    problema = Dados_Entrada(10, 1, 0.25, 0.5, 0.002, 1, 4)
-    malha = Malhas(problema, 20, 20, 'quadrada-normal', True, 0.5)
-    domain, V, elementos_x = malha.gerando_malha()
+    
+    valores = {'num_steps' : 10, 
+               'alpha' : 1, 
+               'beta' : 0.25, 
+               'gama' : 0.5, 
+               'delta' : 0.002, 
+               'epsilon': 1, 
+               'p' : 4, 
+               'grau':2
+               }
+    
+    num_elementos = 10
+    
+    furo = False
+    
+    if furo == False:
+        como_criar_malha = 'quadrada-normal'
+    #if como_criar_malha == 'quadrada-normal' or furo == False:
+        problema = Dados_Entrada(**valores)
+        malha = Malhas(problema, num_elementos, num_elementos, como_criar_malha)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, furo, como_criar_malha).gerando_malha()
+        como_prender = 'solte-1'
+        
+    elif furo == True:
+        como_criar_malha = 'gmsh'
+        problema = Dados_Entrada(**valores)
+        centro = input('Centro: ')
+        centro = float(centro)
+        malha = Malhas(problema, num_elementos, num_elementos, como_criar_malha, furo, centro)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos,  furo, como_criar_malha, centro).gerando_malha()
+        como_prender = input("Como fazer nas bordas? ")
+        while como_prender not in ['solte-1', 'prenda-as-quatro']:
+            como_prender = input("Como fazer nas bordas? ")
+    
     funcoes = Funcoes(problema, domain, V)
-    condicoes_contorno = Condicoes_contorno(domain, V, 'solte-1')
+    
+    condicoes_contorno = Condicoes_contorno(domain, V, como_prender)
+
     forma_variacional = FormaVariacional(problema, funcoes, condicoes_contorno, malha, V, domain, elementos_x)
-    
-    
-    
-    
-    
+    a_n = forma_variacional.a_n()
+    vetor_energia = forma_variacional.retorna_vetor_energia
+    vetor_tempo = forma_variacional.retorna_vetor_tempo
+    caminho = forma_variacional.retorna_estrutura_caminho()
+
+  
     
 

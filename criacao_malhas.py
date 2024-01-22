@@ -10,7 +10,7 @@ from dolfinx.mesh import create_unit_square
 
 class Malhas:
     
-    def __init__(self, dados_entrada, elementos_x, elementos_y, tipo_malha, furo = False, centro = 0.25):
+    def __init__(self, dados_entrada, elementos_x, elementos_y, furo, tipo_malha = 'quadrada-normal', centro = 0.25):
         self.dados_entrada = dados_entrada
         self.elementos_x = elementos_x
         self.elementos_y = elementos_y
@@ -20,15 +20,18 @@ class Malhas:
         
     def gerando_malha(self):
         
-        if self.tipo_malha == 'quadrada-normal':
+        if self.furo == False:
+            self.tipo_malha = 'quadrada-normal'
             self.domain = create_unit_square(MPI.COMM_WORLD, self.elementos_x, self.elementos_y)
             self.V = fem.FunctionSpace(self.domain, ("CG", self.dados_entrada.grau))
             
             return self.domain, self.V, self.elementos_x
-            
-        if self.tipo_malha == 'gmsh':
+        
+        else:
+            self.tipo_malha = 'gmsh'
             gmsh.initialize()
             
+            '''
             if self.furo == False:
                 L = 1
                 H = 1
@@ -52,7 +55,7 @@ class Malhas:
                     gmsh.model.mesh.generate(gdim)
                     gmsh.model.mesh.setOrder(2)
                     gmsh.model.mesh.optimize("Netgen")
-            
+            '''
             if self.furo == True:
                 L = 1
                 H = 1
@@ -88,12 +91,42 @@ class Malhas:
             
             self.V = fem.FunctionSpace(self.domain, ("CG", self.dados_entrada.grau))
             
+            gmsh.finalize()
+            
             return self.domain, self.V, self.elementos_x
 
 if __name__ == "__main__":
-
-    problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1, 4)
-    domain, V, elementos_x = Malhas(problema, 10, 10, 'quadrada-normal').gerando_malha()
+    
+    valores = {'num_steps' : 100, 
+               'alpha' : 1, 
+               'beta' : 0.25, 
+               'gama' : 0.5, 
+               'delta' : 0.002, 
+               'epsilon': 1, 
+               'p' : 4, 
+               'grau':2
+               }
+    
+    num_elementos = 10
+    
+    #como_criar_malha = 'quadrada-normal'
+    furo = False
+    
+    if furo == False:
+        como_criar_malha = 'quadrada-normal'
+    #if como_criar_malha == 'quadrada-normal' or furo == False:
+        problema = Dados_Entrada(**valores)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, furo, como_criar_malha).gerando_malha()
+    
+    elif furo == True:
+    #elif como_criar_malha == 'gmsh' and furo == True:
+        como_criar_malha = 'gmsh'
+        problema = Dados_Entrada(**valores)
+        centro = input('Centro: ')
+        centro = float(centro)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha, furo, centro).gerando_malha()
+    
+    
     
     
     

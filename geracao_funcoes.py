@@ -9,7 +9,7 @@ import numpy as np
 
 class Funcoes:
     
-    def __init__(self, dados_entrada, domain, V, k = 2, l = 2.5, t0 = 0, pi = np.pi):
+    def __init__(self, dados_entrada, domain, V, k = 2, l = 2.5, t0 = 0, pi = np.pi,  **kwargs):
         self.V = V
         self.domain = domain
         self.dados_entrada = dados_entrada
@@ -61,7 +61,35 @@ class Funcoes:
     
     
 if __name__ == "__main__":
+    
+    valores = {'num_steps' : 100, 
+               'alpha' : 1, 
+               'beta' : 0.25, 
+               'gama' : 0.5, 
+               'delta' : 0.002, 
+               'epsilon': 1, 
+               'p' : 4, 
+               'grau':2
+               }
+    
+    num_elementos = 10
+    
+    como_criar_malha = 'quadrada-normal'
+    furo = False
+    
+    if como_criar_malha == 'quadrada-normal' or furo == False:
+        problema = Dados_Entrada(**valores)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha).gerando_malha()
+    
+    elif como_criar_malha == 'gmsh' and furo == True:
+        problema = Dados_Entrada(**valores)
+        centro = input('Centro: ')
+        centro = float(centro)
+        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha, furo, centro).gerando_malha()
 
-    problema = Dados_Entrada(100, 1, 0.25, 0.5, 0.002, 1, 4)
-    domain, V = Malhas(problema, 'quadrada-normal', 10, 10).gerando_malha()
     funcoes = Funcoes(problema, domain, V)
+    
+    
+    
+    
+    
