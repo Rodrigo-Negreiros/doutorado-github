@@ -36,9 +36,9 @@ class Imprime_Resultados:
             
         else:
             
-            nome_arquivo = 'vetores_un' + self.caminho + f'-centro-{malha.centro}.pkl'
+            nome_arquivo = 'vetores_un' + self.caminho + f'-centro-{malha.centro}-raio-{malha.raio}.pkl'
             caminho_completo = os.path.join(self.nome_pasta, nome_arquivo)
-            
+        
         # Verifique se o arquivo existe
         if os.path.exists(caminho_completo):
             with open(caminho_completo, 'rb') as arquivo_pickle:
@@ -71,9 +71,10 @@ class Imprime_Resultados:
         if furo == False:
             nome_arquivo = 'vetores_un' + self.caminho + '.png'
         else:
-            nome_arquivo = 'vetores_un' + self.caminho + f'-centro-{malha.centro}.png'
+            nome_arquivo = 'vetores_un' + self.caminho + f'-centro-{malha.centro}-raio-{malha.raio}.png'
         #nome_arquivo = f'vetores_un-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.png'
         caminho_completo = os.path.join(pasta_graficos_energia, nome_arquivo)
+        
         
         if not os.path.exists(pasta_graficos_energia):
             os.makedirs(pasta_graficos_energia)
@@ -100,7 +101,7 @@ class Imprime_Resultados:
             if furo == False:
                 nome_arquivo = 'vetores_un' + self.caminho + '.gif'
             else:
-                nome_arquivo = 'vetores_un' + self.caminho + f'-centro-{malha.centro}.gif'
+                nome_arquivo = 'vetores_un' + self.caminho + f'-centro-{malha.centro}-raio-{malha.raio}.gif'
             #nome_arquivo = f"waves-tipo-malha-{self.malha.tipo_malha}-condicoes-contorno-{self.condicoes_contorno.como_prender}-elementos-{self.elementos_x}-num_steps-{self.dados_entrada.num_steps}-delta-{self.dados_entrada.delta}-grau-{self.dados_entrada.grau}.gif"
             caminho_completo = os.path.join(pasta_videos, nome_arquivo)
             
@@ -151,32 +152,33 @@ if __name__ == "__main__":
                'grau':2
                }
     
-    num_elementos = 10
+    valores_malha = {'elementos_x': 10,
+                     'elementos_y': 10,
+                     'furo': True}
     
-    furo = True
     
-    if furo == False:
+    if valores_malha['furo'] == False:
         como_criar_malha = 'quadrada-normal'
         problema = Dados_Entrada(**valores)
-        malha = Malhas(problema, num_elementos, num_elementos, furo, como_criar_malha)
-        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, furo, como_criar_malha).gerando_malha()
+        malha = Malhas(problema, **valores_malha, tipo_malha= como_criar_malha)
+        malha.tipo_malha = 'quadrada-normal'
+        domain, V, elementos_x = Malhas(problema, **valores_malha).gerando_malha()
         como_prender = 'solte-1'
-    
-    elif furo == True:
+        
+    elif valores_malha['furo'] == True:
         como_criar_malha = 'gmsh'
         problema = Dados_Entrada(**valores)
-        centro = input('Centro: ')
-        centro = float(centro)
-        malha = Malhas(problema, num_elementos, num_elementos, furo, como_criar_malha, centro)
-        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos,furo, como_criar_malha, centro).gerando_malha()
+        centro = float(input('Centro: '))
+        raio = float(input('Raio: '))
+        malha = Malhas(problema, **valores_malha, tipo_malha = como_criar_malha, centro = centro, raio = raio)
+        domain, V, elementos_x = malha.gerando_malha()
         como_prender = input("Como fazer nas bordas? ")
         while como_prender not in ['solte-1', 'prenda-as-quatro']:
             como_prender = input("Como fazer nas bordas? ")
     
-    funcoes = Funcoes(problema, domain, V)
-    
+    k, l = 2, 2.5
+    funcoes = Funcoes(problema, domain, V, k, l)
     condicoes_contorno = Condicoes_contorno(domain, V, como_prender)
-    
     forma_variacional = FormaVariacional(problema, funcoes, condicoes_contorno, malha, V, domain, elementos_x)
     a_n = forma_variacional.a_n()
     vetor_energia = forma_variacional.retorna_vetor_energia
@@ -186,9 +188,9 @@ if __name__ == "__main__":
     informacoes = {'nome_pasta': 'vetores',
                    'caminho': caminho}
     #dados_entrada, malha, condicoes_contorno, V, elementos_x, retorna_vetor_energia, retorna_vetor_tempo, nome_arquivo, nome_pasta = 'vetores', **kwargs):   
-    resultado = Imprime_Resultados(problema, malha, furo, condicoes_contorno, V, elementos_x, forma_variacional, vetor_energia, vetor_tempo, **informacoes)
-    resultado.mostra_grafico_energia(furo, malha)
-    resultado.mostra_video(furo, malha)
+    resultado = Imprime_Resultados(problema, malha, valores_malha['furo'], condicoes_contorno, V, elementos_x, forma_variacional, vetor_energia, vetor_tempo, **informacoes)
+    resultado.mostra_grafico_energia(valores_malha['furo'], malha)
+    resultado.mostra_video(valores_malha['furo'], malha)
 
     
     

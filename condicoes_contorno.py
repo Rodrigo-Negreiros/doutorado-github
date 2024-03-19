@@ -45,27 +45,28 @@ if __name__ == "__main__":
                'grau':2
                }
     
-    num_elementos = 10
+    valores_malha = {'elementos_x': 10,
+                     'elementos_y': 10,
+                     'furo': False}
     
-    como_criar_malha = 'gmsh'
-    furo = True
-    
-    if furo == False or como_criar_malha == 'quadrada-normal':
+    if valores_malha['furo'] == False:
+        como_criar_malha = 'quadrada-normal'
         problema = Dados_Entrada(**valores)
-        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha).gerando_malha()
+        domain, V, elementos_x = Malhas(problema, **valores_malha, tipo_malha = como_criar_malha).gerando_malha()
         como_prender = 'solte-1'
     
-    elif furo == True and como_criar_malha == 'gmsh': 
+    elif valores_malha['furo'] == True:
+        como_criar_malha = 'gmsh'
         problema = Dados_Entrada(**valores)
-        centro = input('Centro: ')
-        centro = float(centro)
-        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha, furo, centro).gerando_malha()
+        centro = float(input('Centro: '))
+        raio = float(input('Raio: '))
+        domain, V, elementos_x = Malhas(problema, **valores_malha, tipo_malha = como_criar_malha, centro = centro, raio = raio).gerando_malha()
         como_prender = input("Como fazer nas bordas? ")
         while como_prender not in ['solte-1', 'prenda-as-quatro']:
             como_prender = input("Como fazer nas bordas? ")
     
-    funcoes = Funcoes(problema, domain, V)
-    
+    k, l = 2, 2.5
+    funcoes = Funcoes(problema, domain, V, k, l)
     condicoes_contorno = Condicoes_contorno(domain, V, como_prender)
     
     

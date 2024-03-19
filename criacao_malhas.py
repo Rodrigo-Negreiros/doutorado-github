@@ -8,15 +8,16 @@ import gmsh
 from dolfinx.io import gmshio
 from dolfinx.mesh import create_unit_square
 
-class Malhas:
+class Malhas(Dados_Entrada):
     
-    def __init__(self, dados_entrada, elementos_x, elementos_y, furo, tipo_malha = 'quadrada-normal', centro = 0.25):
+    def __init__(self, dados_entrada, elementos_x = None, elementos_y = None, furo = None, tipo_malha = '', centro = None, raio = None):
         self.dados_entrada = dados_entrada
         self.elementos_x = elementos_x
         self.elementos_y = elementos_y
         self.tipo_malha = tipo_malha
         self.furo = furo
         self.centro = centro
+        self.raio = raio
         
     def gerando_malha(self):
         
@@ -31,37 +32,12 @@ class Malhas:
             self.tipo_malha = 'gmsh'
             gmsh.initialize()
             
-            '''
-            if self.furo == False:
-                L = 1
-                H = 1
-                gdim = 2
-                elementos = self.elementos_x
-                nx = ny = L / elementos
-        
-                mesh_comm = MPI.COMM_WORLD
-                model_rank = 0
-                if mesh_comm.rank == model_rank:
-                    rectangle = gmsh.model.occ.addRectangle(0, 0, 0, L, H, tag = 1)
-        
-                if mesh_comm.rank == model_rank:
-                    gmsh.model.occ.synchronize()
-                    gmsh.model.addPhysicalGroup(gdim, [rectangle])
-                   
-                if mesh_comm.rank == model_rank:
-                    gmsh.option.setNumber("Mesh.SubdivisionAlgorithm", 2)
-                    gmsh.option.setNumber("Mesh.CharacteristicLengthMin",nx)
-                    gmsh.option.setNumber("Mesh.CharacteristicLengthMax",ny)
-                    gmsh.model.mesh.generate(gdim)
-                    gmsh.model.mesh.setOrder(2)
-                    gmsh.model.mesh.optimize("Netgen")
-            '''
             if self.furo == True:
                 L = 1
                 H = 1
                 
                 c_x = c_y = self.centro
-                r = 0.125
+                r = self.raio
                 gdim = 2
                 elementos = self.elementos_x 
                 nx = ny = L / elementos
@@ -107,24 +83,21 @@ if __name__ == "__main__":
                'grau':2
                }
     
-    num_elementos = 10
+    valores_malha = {'elementos_x': 10,
+                     'elementos_y': 10,
+                     'furo': False}
     
-    #como_criar_malha = 'quadrada-normal'
-    furo = False
-    
-    if furo == False:
+    if valores_malha['furo'] == False:
         como_criar_malha = 'quadrada-normal'
-    #if como_criar_malha == 'quadrada-normal' or furo == False:
         problema = Dados_Entrada(**valores)
-        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, furo, como_criar_malha).gerando_malha()
+        domain, V, elementos_x = Malhas(problema, **valores_malha, tipo_malha = como_criar_malha).gerando_malha()
     
-    elif furo == True:
-    #elif como_criar_malha == 'gmsh' and furo == True:
+    elif valores_malha['furo'] == True:
         como_criar_malha = 'gmsh'
         problema = Dados_Entrada(**valores)
-        centro = input('Centro: ')
-        centro = float(centro)
-        domain, V, elementos_x = Malhas(problema, num_elementos, num_elementos, como_criar_malha, furo, centro).gerando_malha()
+        centro = float(input('Centro: '))
+        raio = float(input('Raio: '))
+        domain, V, elementos_x = Malhas(problema, **valores_malha, tipo_malha = como_criar_malha, centro = centro, raio = raio).gerando_malha()
     
     
     

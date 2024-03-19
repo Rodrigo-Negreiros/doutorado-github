@@ -70,7 +70,7 @@ div .problema .word-problema{
   padding-top: 20px;
   grid-row: 3;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   align-self: start;
 }
 
@@ -96,7 +96,11 @@ li {
 #react-select-3--value-item,
 #react-select-4--value-item, 
 #react-select-5--value-item,
-#react-select-6--value-item{
+#react-select-6--value-item,
+#react-select-7--value-item,
+#react-select-8--value-item,
+#react-select-9--value-item
+#react-select-10--value-item{
   color: #e5e5e5;
 }
 
@@ -189,6 +193,10 @@ li {
 #comparacao-title{
   padding-top: 60px;
   padding-left: 42px;
+}
+
+#grafico-tempo-valores > div.js-plotly-plot > div > div > svg:nth-child(1) > g.bglayer > rect{
+  opacity: 0.01;
 }
 
 

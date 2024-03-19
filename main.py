@@ -13,40 +13,49 @@ valores = {'alpha' : 1,
            'gama' : 0.5, 
            'delta' : 0.01, 
            'epsilon': 1, 
-           'p' : 4, 
-           'grau':4
+           'p' : 2, 
+           'grau': 4
            }
 
 furo = False
 
-numeros_passos = [100, 200, 400]
-numero_elementos = [10, 20]
+numeros_passos = [10]
+numero_elementos = [10]
 
 valor_centro = 0
+valor_raio = 0
 
 for i, n_p in enumerate(numeros_passos):
     for j, n_e in enumerate(numero_elementos):
+        
         if furo == False:
             como_criar_malha = 'quadrada-normal'
             como_prender = 'solte-1'
+            centro = None
+            raio = None
         
         elif furo == True:
             como_criar_malha = 'gmsh'
             if i == 0 and j == 0:
-                centro = input('Centro: ')
-                centro = float(centro)
+                centro = float(input('Centro: '))
+                raio = float(input('Raio: '))
                 valor_centro += centro
+                valor_raio += raio
                 como_prender = input("Como fazer nas bordas? ")
                 while como_prender not in ['solte-1', 'prenda-as-quatro']:
                     como_prender = input("Como fazer nas bordas? ") 
             else:
                 centro = valor_centro
+                raio = valor_raio
         
         print(f'Número de passos: {n_p}, Numero de elementos: {n_e}')
         problema = Dados_Entrada(n_p, **valores)
-        malha = Malhas(problema, n_e, n_e, furo, como_criar_malha)
+        
+        
+        malha = Malhas(problema, n_e, n_e, furo, como_criar_malha, centro, raio)
         domain, V, elementos_x = malha.gerando_malha()
-        funcoes = Funcoes(problema, domain, V)
+        k, l = 2, 2.5
+        funcoes = Funcoes(problema, domain, V, k, l)
         condicoes_contorno = Condicoes_contorno(domain, V, como_prender)
         
         # Execução do Lopping:   

@@ -13,15 +13,22 @@ import matplotlib.pyplot as plt
 
 folder_path_gif = "videos"
 folder_path_png = "graficos_energias"
-def modelo_nome(condicao_contorno, elementos, num_passos, delta, grau):
-    string_padrao = f'-tipo-malha-quadrada-normal-condicoes-contorno-{condicao_contorno}-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{grau}'
+
+def modelo_nome(condicao_contorno, elementos, num_passos, delta, p, grau, possui_furo):
+    if possui_furo == 'não':
+        string_padrao = f'-tipo-malha-quadrada-normal-condicoes-contorno-{condicao_contorno}-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-p-{p}-grau-{grau}'
+    else:
+        string_padrao = f'-tipo-malha-gmsh-condicoes-contorno-{condicao_contorno}-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-p-{p}-grau-{grau}'
     return string_padrao
 
 numero_de_elementos = [10, 20]
 numero_de_passos = [100, 200, 400]
 delta = [format(0, '.1f'), 0.01, 0.05]
-grau_dos_polinomios = [2, 4]
-condicoes_contorno = ['solte-1', 'presa']
+valor_p = [2, 4]
+grau_dos_polinomios = [1, 2, 4]
+condicoes_contorno = ['solte-1', 'prenda-as-quatro']
+centro = [0.25, 0.5, 0.75]
+raio = [0.125]
 
 def read_and_encode_file(file_path):
     with open(file_path, 'rb') as file:
@@ -57,14 +64,45 @@ app.layout = html.Div([
         ]),
         
         html.Li([
-        html.H3("Grau dos polinômios:"),
-        dcc.Dropdown(grau_dos_polinomios, value=2, id='dropdown-4', className="seletor", style={'backgroundColor': '#4C4C4C', 'color': '#838383'}),
+        html.H3("Valor de p:"),
+        dcc.Dropdown(valor_p, value=4, id='dropdown-4', className="seletor", style={'backgroundColor': '#4C4C4C', 'color': '#838383'}),
         ]),
         
         html.Li([
-        html.H3("Condição de contorno:"),
-        dcc.Dropdown(condicoes_contorno, value='solte-1', id='dropdown-5', className="seletor", style={'backgroundColor': '#4C4C4C', 'color': '#838383'}),
+        html.H3("Grau dos polinômios:"),
+        dcc.Dropdown(grau_dos_polinomios, value=2, id='dropdown-5', className="seletor", style={'backgroundColor': '#4C4C4C', 'color': '#838383'}),
         ]),
+        
+        html.Li([
+        html.H3('Possui furo?:'),
+        dcc.Dropdown(
+            id='dropdown-condicao',
+            options=[
+                {'label': 'sim', 'value': 'sim'},
+                {'label': 'não', 'value': 'não'}
+            ],
+            value='não',
+            style={'backgroundColor': '#4C4C4C', 'color': '#838383'}
+        ),
+        ]),
+        dcc.Loading(
+            id="loading-dropdown",
+            type="circle",
+            children=[
+                html.Div([
+                    html.H3('Centro:', id='label-condicao1', style={'display': 'none'}),
+                    dcc.Dropdown(centro, value = 0.25, id='dropdown-condicao1', style={'display': 'none'}),
+                    
+                    html.H3('Raio:', id='label-condicao2', style={'display': 'none'}),
+                    dcc.Dropdown(raio, value = 0.125, id='dropdown-condicao2', style={'display': 'none'}),
+                    
+                    html.H3('Borda:', id='label-condicao3', style={'display': 'none'}),
+                    dcc.Dropdown(condicoes_contorno, value = 'solte-1', id='dropdown-condicao3', style={'display': 'none'}),
+                    
+                    html.H1(id='output-h1', style={'display': 'none'})
+                ])
+            ]
+        ),
         
         
         
@@ -111,25 +149,64 @@ app.layout = html.Div([
     
 ], className = 'corpo') 
 
+
 @app.callback(
-    Output('valor_max', 'children'),
+    [Output('dropdown-condicao1', 'style'),
+     Output('dropdown-condicao2', 'style'),
+     Output('dropdown-condicao3', 'style'),
+     Output('label-condicao1', 'style'),
+     Output('label-condicao2', 'style'),
+     Output('label-condicao3', 'style'),
+     Output('output-h1', 'children')],
     [Input('dropdown-1', 'value'),
      Input('dropdown-2', 'value'),
      Input('dropdown-3', 'value'),
      Input('dropdown-4', 'value'),
-     Input('dropdown-5', 'value')]
+     Input('dropdown-5', 'value'),
+     Input('dropdown-condicao', 'value'),
+     Input('dropdown-condicao1', 'value'),
+     Input('dropdown-condicao2', 'value'),
+     Input('dropdown-condicao3', 'value')]
 )
-def update_output(num_passos, elementos, delta, grau, condicao_contorno):
-    print(condicao_contorno)
- 
+def update_dropdown_and_h1(num_passos, elementos, delta, p, grau, possui_furo, centro, raio, condicao):
+    dropdown_condicao1_style = {'backgroundColor': '#4C4C4C', 'display': 'block' if possui_furo == 'sim' else 'none'}
+    dropdown_condicao2_style = {'backgroundColor': '#4C4C4C', 'display': 'block' if possui_furo == 'sim' else 'none'}
+    dropdown_condicao3_style = {'backgroundColor': '#4C4C4C', 'display': 'block' if possui_furo == 'sim' else 'none'}
+    label_condicao1_style = {'display': 'block' if possui_furo == 'sim' else 'none'}
+    label_condicao2_style = {'display': 'block' if possui_furo == 'sim' else 'none'}
+    label_condicao3_style = {'display': 'block' if possui_furo == 'sim' else 'none'}
+    
+    
+    if possui_furo == 'sim':
+        result_string = f'-tipo-malha-gmsh-condicoes-contorno-{condicao}-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-p-{p}-grau-{grau}'
+        
+    else:
+        result_string = f'-tipo-malha-quadrada-normal-condicoes-contorno-{condicao}-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-p-{p}-grau-{grau}'
+        
+        
+    
+    # Obtém o caminho completo do arquivo .pkl
+    #caminho_completo = os.path.join('vetores_energia', result_string)
+
+    return dropdown_condicao1_style, dropdown_condicao2_style,dropdown_condicao3_style, label_condicao1_style, label_condicao2_style, label_condicao3_style, result_string
+
+
+@app.callback(
+    Output('valor_max', 'children'),
+    [Input('output-h1', 'children'),
+    Input('dropdown-condicao', 'value'),
+    Input('dropdown-condicao1', 'value'),
+    Input('dropdown-condicao2', 'value')]
+)
+def update_output(result_string, possui_furo, centro, raio):
     #result_string = f'vetores_energia-tipo-malha-quadrada-normal-condicoes-contorno-{condicao_contorno}-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{grau}.pkl'
     
-    string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
+    #string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
     
-    if condicao_contorno == 'solte-1':
-        result_string = 'vetores_energia' + string_padrao + '.pkl'
+    if possui_furo == 'não':
+        result_string = 'vetores_energia' + result_string + '.pkl'
     else:
-        result_string = 'vetores_energia' + string_padrao + f'-centro-{None}.pkl'
+        result_string = 'vetores_energia' + result_string + f'-centro-{centro}-raio-{raio}.pkl'
     
     # Obtém o caminho completo do arquivo .pkl
     caminho_completo = os.path.join('vetores_energia', result_string)
@@ -149,29 +226,28 @@ def update_output(num_passos, elementos, delta, grau, condicao_contorno):
     
     return exp
 
+
 @app.callback(
     Output('tempo_exe', 'children'),
-    [Input('dropdown-1', 'value'),
-     Input('dropdown-2', 'value'),
-     Input('dropdown-3', 'value'),
-     Input('dropdown-4', 'value'),
-     Input('dropdown-5', 'value')]
+    [Input('output-h1', 'children'),
+     Input('dropdown-condicao', 'value'),
+     Input('dropdown-condicao1', 'value'),
+     Input('dropdown-condicao2', 'value')]
 )
-def update_output(num_passos, elementos, delta, grau, condicao_contorno):
+def update_output(result_string, possui_furo, centro, raio):
+    #string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
     
-    string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
-    
-    if condicao_contorno == 'solte-1':
-        result_string = 'vetor_tempo' + string_padrao + '.pkl'
+    if possui_furo == 'não':
+        result_string = 'vetor_tempo' + result_string + '.pkl'
     else:
-        result_string = 'vetor_tempo' + string_padrao + f'-centro-{None}.pkl'
+        result_string = 'vetor_tempo' + result_string + f'-centro-{centro}-raio-{raio}.pkl'
     
     
     #result_string = f'vetor_tempo-tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{grau}.pkl'
     
     # Obtém o caminho completo do arquivo .pkl
     caminho_completo = os.path.join('vetores_tempo_geral', result_string)
-    
+    # print('oi', caminho_completo)
     # Abre o arquivo no modo de leitura binária ('rb') usando o with statement
     with open(caminho_completo, 'rb') as arquivo:
         # Carrega os dados do arquivo
@@ -182,22 +258,22 @@ def update_output(num_passos, elementos, delta, grau, condicao_contorno):
     
     return maior_valor
 
-   
+
 @app.callback(
     Output('png-display', 'src'),
-    [Input('dropdown-1', 'value'),
-     Input('dropdown-2', 'value'),
-     Input('dropdown-3', 'value'),
-     Input('dropdown-4', 'value'),
-     Input('dropdown-5', 'value')]
+    [Input('output-h1', 'children'),
+     Input('dropdown-condicao', 'value'),
+     Input('dropdown-condicao1', 'value'),
+     Input('dropdown-condicao2', 'value')]
 )
-def update_output(num_passos, elementos, delta, grau, condicao_contorno):
-    string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
+def update_output(result_string, possui_furo, centro, raio):
+
+    #string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
     
-    if condicao_contorno == 'solte-1':
-        result_string = 'vetores_un' + string_padrao + '.png'
+    if possui_furo == 'não':
+        result_string = 'vetores_un' + result_string + '.png'
     else:
-        result_string = 'vetores_un' + string_padrao + f'-centro-{None}.png'
+        result_string = 'vetores_un' + result_string + f'-centro-{centro}-raio-{raio}.png'
     
     #result_string = f'vetores_un-tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{grau}.png'
     png_path = os.path.join(folder_path_png, result_string)
@@ -207,19 +283,23 @@ def update_output(num_passos, elementos, delta, grau, condicao_contorno):
 
 @app.callback(
     Output('gif-display', 'src'),
-    [Input('dropdown-1', 'value'),
-     Input('dropdown-2', 'value'),
-     Input('dropdown-3', 'value'), 
-     Input('dropdown-4', 'value'),
-     Input('dropdown-5', 'value')]
+    [Input('output-h1', 'children'),
+     Input('dropdown-condicao', 'value'),
+     Input('dropdown-condicao1', 'value'),
+     Input('dropdown-condicao2', 'value')]
 )
-def update_output(num_passos, elementos, delta, grau, condicao_contorno):
-    result_string = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
+def update_output(result_string, possui_furo, centro, raio):
+    
+    #result_string = modelo_nome(condicao_contorno, elementos, num_passos, delta, grau)
     result_string = result_string[1:]
     
     #result_string = f'tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{grau}'
     png_path = os.path.join(folder_path_png, result_string)
-    gif_path = os.path.join(folder_path_gif, f'vetores_un-{result_string}.gif')
+    
+    if possui_furo == 'não':
+        gif_path = os.path.join(folder_path_gif, f'vetores_un-{result_string}.gif')
+    else:
+        gif_path = os.path.join(folder_path_gif, f'vetores_un-{result_string}-centro-{centro}-raio-{raio}.gif')
     
     # Inicializa a variável para o caso de o arquivo GIF não existir
     encoded_gif = None
@@ -243,22 +323,32 @@ def update_output(num_passos, elementos, delta, grau, condicao_contorno):
      Input('dropdown-2', 'value'),
      Input('dropdown-3', 'value'),
      Input('dropdown-4', 'value'),
-     Input('dropdown-5', 'value')]
+     Input('dropdown-5', 'value'),
+     Input('dropdown-condicao3', 'value'),
+     Input('dropdown-condicao','value'),
+     Input('dropdown-condicao1', 'value'),
+     Input('dropdown-condicao2', 'value')]
 )
-def update_output(num_passos, elementos, delta, grau, condicao_contorno):
+def update_output(num_passos, elementos, delta, p, grau, condicao_contorno, possui_furo, centro, raio):
     
     vetores = []    
 
     for i, valor in enumerate(grau_dos_polinomios):
         vetor_tempo = np.linspace(0, 4*np.pi , num_passos)
-        #result_string = f'vetores_energia-tipo-malha-quadrada-normal-condicoes-contorno-solte-1-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{valor}.pkl'
         
-        string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, valor)
+        #result_string = f'vetores_energia-tipo-malha-quadrada-normal-condicoes-contorno-{condicao_contorno}-elementos-{elementos}-num_steps-{num_passos}-delta-{delta}-grau-{valor}.pkl'
         
-        if condicao_contorno == 'solte-1':
+        if possui_furo == 'não':
+            condicao_contorno = 'solte-1'
+            
+            string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, p, valor, possui_furo)
+            
             result_string = 'vetores_energia' + string_padrao + '.pkl'
         else:
-            result_string = 'vetores_energia' + string_padrao + f'-centro-{None}.pkl'
+            string_padrao = modelo_nome(condicao_contorno, elementos, num_passos, delta, p, valor, possui_furo)
+            
+            result_string = 'vetores_energia' + string_padrao + f'-centro-{centro}-raio-{raio}.pkl'
+        
         
         caminho_completo = os.path.join('vetores_energia', result_string)
         
@@ -267,9 +357,12 @@ def update_output(num_passos, elementos, delta, grau, condicao_contorno):
         vetores.append(valores)
 
     df = pd.concat(vetores, axis=1)
+    
     df['tempo'] = vetor_tempo
     
-    figure = px.line(df, x='tempo', y = df.columns[:])
+    colors = ['#2B8B6F', '#FDE030', '#45075B']
+    figure = px.line(df, x='tempo', y = df.columns[:], color_discrete_sequence=colors)
+    
     figure.update_layout(plot_bgcolor='#e5e5e5', 
                          paper_bgcolor='#4C4C4C', 
                          legend=dict(font=dict(color='#dfdfdf')), 
