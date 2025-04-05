@@ -103,6 +103,13 @@ class Funcoes:
     def v_ini(self):
         return fem.Expression(self.u0_t, self.V.element.interpolation_points())
     
+    
+    
+    def f(self):
+        return fem.Expression(self.f, self.V.element.interpolation_points())
+    def g(self):
+        return fem.Expression(self.g, self.V.element.interpolation_points())   
+    
 
 if __name__ == "__main__":
     

@@ -11,16 +11,16 @@ start_time = time.time()
 valores = {'alpha' : 1, 
            'beta' : 0.25, 
            'gama' : 0.5, 
-           'delta' : 0.01, 
+           'delta' : 1, 
            'epsilon': 1, 
            'p' : 2, 
-           'grau': 4
+           'grau': 2
            }
 
 furo = False
 
-numeros_passos = [10]
-numero_elementos = [10]
+numeros_passos = [200]
+numero_elementos = [40]
 
 valor_centro = 0
 valor_raio = 0
@@ -54,7 +54,7 @@ for i, n_p in enumerate(numeros_passos):
         
         malha = Malhas(problema, n_e, n_e, furo, como_criar_malha, centro, raio)
         domain, V, elementos_x = malha.gerando_malha()
-        k, l = 2, 2.5
+        k, l = 2, 2
         funcoes = Funcoes(problema, domain, V, k, l)
         condicoes_contorno = Condicoes_contorno(domain, V, como_prender)
         

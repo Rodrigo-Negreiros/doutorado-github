@@ -5,6 +5,7 @@ from forma_variacional import FormaVariacional
 from condicoes_contorno import Condicoes_contorno
 
 from dolfinx import plot
+import dolfinx
 import pyvista as pv
 import pickle
 import os
@@ -64,7 +65,7 @@ class Imprime_Resultados:
         ax.plot(x_tempo, y_energia, color = '#2B8B6F')
         
         #ax.set_title(f'Gráfico de energia (nx:{self.elementos_x}, grau:{self.dados_entrada.grau}, passos: {self.dados_entrada.num_steps}, delta = {self.dados_entrada.delta})', fontweight ="bold")
-        ax.set_xlabel("Período: 8π", fontsize = 12)
+        ax.set_xlabel("Período: 4π", fontsize = 12)
         ax.set_ylabel("Energia em escala logarítmica", fontsize = 12)
         
         pasta_graficos_energia = 'graficos_energias'
@@ -91,7 +92,7 @@ class Imprime_Resultados:
         plotear = True #False  # Faça plotear = True para salvar no arquivo "waves.gif"
         
         if plotear == True:
-            cells, types, x = plot.create_vtk_mesh(self.V)
+            cells, types, x = plot.vtk_mesh(self.V)
             grid = pv.UnstructuredGrid(cells, types, x)
             grid.point_data["u"] = vetores[0]
             grid.set_active_scalars("u")

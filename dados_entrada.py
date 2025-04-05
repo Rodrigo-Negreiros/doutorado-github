@@ -37,3 +37,4 @@ if __name__ == "__main__":
                }
     
     problema = Dados_Entrada(**valores)
+    print(problema)

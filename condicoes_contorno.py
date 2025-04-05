@@ -11,7 +11,7 @@ class Condicoes_contorno:
         
         self.como_prender = como_prender
         self.null_vector = fem.Function(V)
-        self.null_vector.vector.set(0.0)
+        self.null_vector.x.array[:] = 0.0
 
         self.tdim = domain.topology.dim
         self.fdim = self.tdim - 1
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     
     valores_malha = {'elementos_x': 10,
                      'elementos_y': 10,
-                     'furo': False}
+                     'furo': True}
     
     if valores_malha['furo'] == False:
         como_criar_malha = 'quadrada-normal'

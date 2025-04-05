@@ -24,7 +24,7 @@ class Malhas(Dados_Entrada):
         if self.furo == False:
             self.tipo_malha = 'quadrada-normal'
             self.domain = create_unit_square(MPI.COMM_WORLD, self.elementos_x, self.elementos_y)
-            self.V = fem.FunctionSpace(self.domain, ("CG", self.dados_entrada.grau))
+            self.V = fem.functionspace(self.domain, ("CG", self.dados_entrada.grau))
             
             return self.domain, self.V, self.elementos_x
         
@@ -65,7 +65,7 @@ class Malhas(Dados_Entrada):
             self.domain, cell_markers, facet_markers = gmshio.model_to_mesh(gmsh.model, mesh_comm, model_rank, gdim=gdim)
             facet_markers.name = "Facet markers"
             
-            self.V = fem.FunctionSpace(self.domain, ("CG", self.dados_entrada.grau))
+            self.V = fem.functionspace(self.domain, ("CG", self.dados_entrada.grau))
             
             gmsh.finalize()
             
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     
     valores_malha = {'elementos_x': 10,
                      'elementos_y': 10,
-                     'furo': False}
+                     'furo': True}
     
     if valores_malha['furo'] == False:
         como_criar_malha = 'quadrada-normal'

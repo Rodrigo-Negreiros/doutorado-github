@@ -13,11 +13,13 @@ import numpy as np
 
 from dolfinx import mesh, fem, nls
 import time
+from dolfinx.fem.petsc import LinearProblem
+from dolfinx.nls.petsc import NewtonSolver
 
 start_time = time.time()
 
 
-class FormaVariacional:
+class FormaVariacional(Funcoes):
     def __init__(self, dados_entrada, classe_funcoes, condicoes_contorno, malha, V, domain, elementos_x):
         
         self.malha = malha
@@ -40,6 +42,8 @@ class FormaVariacional:
         self.v_0.interpolate(classe_funcoes.v_ini())
         
         
+        #self.f = self.f
+        #self.g = self.g
         self.f = fem.Constant(domain, PETSc.ScalarType(0))
         self.g = fem.Constant(domain, PETSc.ScalarType(0))
 
@@ -88,7 +92,7 @@ class FormaVariacional:
         a = ufl.lhs(F)
         L = ufl.rhs(F)
 
-        problem = fem.petsc.LinearProblem(a, L, bcs=[bc], petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
+        problem = LinearProblem(a, L, bcs=[bc], petsc_options={"ksp_type": "preonly", "pc_type": "lu"})
         #print("Achando a0 ...")
         a00 = problem.solve()
         #print("a0 calculado")
@@ -128,7 +132,7 @@ class FormaVariacional:
             - self.f * self.v * ufl.dx - (self.g - a_1) * self.v * ufl.ds
 
         problem = fem.petsc.NonlinearProblem(F, a_1, bcs=[bc])
-        solver = nls.petsc.NewtonSolver(self.domain.comm, problem)
+        solver = NewtonSolver(self.domain.comm, problem)
         
 
         # Set Newton solver options
@@ -233,7 +237,7 @@ class FormaVariacional:
 
 if __name__ == "__main__":
     
-    valores = {'num_steps' : 10, 
+    valores = {'num_steps' : 200, 
                'alpha' : 1, 
                'beta' : 0.25, 
                'gama' : 0.5, 
@@ -243,8 +247,8 @@ if __name__ == "__main__":
                'grau':2
                }
     
-    valores_malha = {'elementos_x': 10,
-                     'elementos_y': 10,
+    valores_malha = {'elementos_x': 20,
+                     'elementos_y': 20,
                      'furo': True}
     
     if valores_malha['furo'] == False:
@@ -266,7 +270,7 @@ if __name__ == "__main__":
             como_prender = input("Como fazer nas bordas? ")
     
     #alpha, beta, gama, delta, epsilon, pi = problema.retorna_dados()
-    k, l = 2, 2.5
+    k, l = 2, 2
     
     funcoes = Funcoes(problema, domain, V, k, l) #u_exa, t,
     
