@@ -375,4 +375,4 @@ def update_output(num_passos, elementos, delta, p, grau, condicao_contorno, poss
 
 # Executa o aplicativo
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
